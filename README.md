@@ -1,4 +1,4 @@
-# CeDAR — ask questions over your PDFs
+# RAG_PROJECT — ask questions over your PDFs
 
 This project is a small **question-and-answer** app that reads two PDFs, splits them into searchable pieces, and answers your questions **using only text it found** in those documents. It is not a general chatbot: if the answer is not in the PDFs, it should say so or find the least relavent one.
 
