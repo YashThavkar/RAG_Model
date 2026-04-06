@@ -1,0 +1,54 @@
+{
+  "queries": [
+    {
+      "query": "What is the Transformer's main architectural innovation compared to recurrent models?",
+      "expected_source": "Attention_is_all_you_need.pdf",
+      "refs": "self-attention replaces recurrence encoder decoder"
+    },
+    {
+      "query": "Why can Transformer models train faster than recurrent architectures?",
+      "expected_source": "Attention_is_all_you_need.pdf",
+      "refs": "parallelizable attention no sequential dependency"
+    },
+    {
+      "query": "What tasks or translation benchmarks were used to evaluate the Transformer?",
+      "expected_source": "Attention_is_all_you_need.pdf",
+      "refs": "WMT English German BLEU newstest"
+    },
+    {
+      "query": "What is scaled dot-product attention and how is it scaled?",
+      "expected_source": "Attention_is_all_you_need.pdf",
+      "refs": "dot products square root dimension softmax"
+    },
+    {
+      "query": "What types of AI systems are prohibited under the EU AI Act summary?",
+      "expected_source": "EU_AI_Act_Doc.pdf",
+      "refs": "prohibited manipulative social scoring biometric"
+    },
+    {
+      "query": "What obligations apply to providers of general-purpose AI models?",
+      "expected_source": "EU_AI_Act_Doc.pdf",
+      "refs": "documentation copyright training summary systemic risk"
+    },
+    {
+      "query": "Explain the difference between unacceptable, high-risk, limited risk, and minimal risk AI in this document.",
+      "expected_source": "EU_AI_Act_Doc.pdf",
+      "refs": "transparency prohibited regulated unregulated"
+    },
+    {
+      "query": "Which document should I use for questions about EU AI regulation and compliance?",
+      "expected_source": "EU_AI_Act_Doc.pdf",
+      "refs": "AI Act risk providers high-risk"
+    },
+    {
+      "query": "Which document discusses model architecture and attention mechanisms rather than regulation?",
+      "expected_source": "Attention_is_all_you_need.pdf",
+      "refs": "encoder decoder self-attention"
+    },
+    {
+      "query": "What obligations fall on providers of high-risk AI systems?",
+      "expected_source": "EU_AI_Act_Doc.pdf",
+      "refs": "market put into service conformity risk management"
+    }
+  ]
+}
