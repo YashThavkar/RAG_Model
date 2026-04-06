@@ -1,4 +1,4 @@
-# RAG_PROJECT — ask questions over your PDFs
+# RAG_PROJECTg — ask questions over your PDFs
 
 This project is a small **question-and-answer** app that reads two PDFs, splits them into searchable pieces, and answers your questions **using only text it found** in those documents. It is not a general chatbot: if the answer is not in the PDFs, it should say so or find the least relavent one.
 
@@ -25,6 +25,65 @@ Put these two PDFs in the folder **`data/raw/`** (create the folders if they are
 | `EU_AI_Act_Doc.pdf` | A **summary** of the EU AI Act (not legal advice). |
 
 If the PDFs live somewhere else on your machine, you can copy them in with the setup script (you can refer to Step 4 below).
+
+---
+## Findings and trade-offs (design decisions)
+
+### Retrieval: dense + keywords + fusion
+
+- **Dense search (embeddings + FAISS)** finds passages that are **similar in meaning** even when wording differs.  
+  **Trade-off:** Short or unusual phrases can rank oddly; similar-looking chunks from the “wrong” document can score high.
+
+- **BM25 (keyword search)** is strong when the user types **exact words** from the document.  
+  **Trade-off:** It is weak on paraphrases (“authorize” vs “permit”).
+
+- **Hybrid retrieval** combines both and uses **RRF (reciprocal rank fusion)** so we do not have to force two different score types onto one scale.  
+  **Trade-off:** More moving parts and more CPU than dense-only.
+
+- **Cross-encoder reranking** scores each **(query, chunk)** pair more accurately than cosine alone.  
+  **Trade-off:** Slower first query (model load) and more compute per request.
+
+- **Lexical phrase priority** scans the corpus for queries where **tokens appear in order** in a short window (e.g. “track, document”).  
+  **Trade-off:** Extra pass over chunks; tuned rules to avoid junk matches on very short queries.
+
+**Finding:** For a **two-document** corpus, this stack noticeably improved **subsection** and **short-query** behaviour compared to dense-only + large chunks.
+
+### Chunking and PDF quirks
+
+- We use **paragraph-first** splitting, then **sentence** splitting for very long blocks, with **overlap** so facts on chunk edges are not lost.  
+  **Trade-off:** Smaller chunks mean **more** chunks → longer indexing and slightly more retrieval noise if `top_k` is too low.
+
+- The EU Act file is a **summary PDF**, not perfect law text. We added **targeted preprocessing** (heading and bullet splits) so list-style sections do not end up in one giant blob.  
+  **Trade-off:** Rules are **specific to this PDF style**; another document might need different rules.
+
+- **Chunk IDs include the page number** so IDs are unique across the whole book. Earlier, per-page indices collided and broke lookups—this was a real bug, not a cosmetic fix.
+
+### Embeddings and index
+
+- Default model is **MPNet-class** (see `config.py` / `.env.example`), not the smallest MiniLM.  
+  **Trade-off:** Better quality and **768-dimensional** vectors vs faster downloads and smaller models.
+
+- FAISS uses **exact** inner product search (`IndexFlatIP`) on **normalized** vectors (cosine-like ranking).  
+  **Trade-off:** Fine for tens–hundreds of chunks; for **millions** of chunks you would switch to an approximate index (IVF, HNSW, etc.).
+
+### Generation and output
+
+- Answers are supposed to **stick to retrieved context**; the system prompt asks for citations and to refuse when the text is not there.  
+  **Trade-off:** The model can still slip; evaluation uses **lightweight heuristics**, not a human gold standard.
+
+- **API and log output** flattens newlines in answers and previews for readable JSON.  
+  **Trade-off:** The **LLM still sees** original newlines inside chunk text when generating.
+
+### Evaluation
+
+- **`test_queries.json`** checks whether the **right PDF** appears in the top results and whether **hint words** show up—not formal legal correctness.  
+  **Trade-off:** Cheap to run, easy to explain, but **not** a substitute for domain expert review.
+
+### Packaging and tooling
+
+- **`pip install -e .`** (via `requirements.txt`) makes imports reliable in **IDEs, scripts, and pytest**.  
+  **Trade-off:** You must run `pip install -r requirements.txt` from the **project root** so `-e .` resolves correctly.
+
 
 ---
 
@@ -165,65 +224,6 @@ The terminal will print a URL like **`http://127.0.0.1:8000/`**.
 | Tests | `python -m pytest tests -m "not integration" -q` |
 | Evaluation | `python scripts/evaluate.py` |
 | Interview notes → Word | `python scripts/build_interview_docx.py` |
-
----
-
-## Findings and trade-offs (design decisions)
-
-### Retrieval: dense + keywords + fusion
-
-- **Dense search (embeddings + FAISS)** finds passages that are **similar in meaning** even when wording differs.  
-  **Trade-off:** Short or unusual phrases can rank oddly; similar-looking chunks from the “wrong” document can score high.
-
-- **BM25 (keyword search)** is strong when the user types **exact words** from the document.  
-  **Trade-off:** It is weak on paraphrases (“authorize” vs “permit”).
-
-- **Hybrid retrieval** combines both and uses **RRF (reciprocal rank fusion)** so we do not have to force two different score types onto one scale.  
-  **Trade-off:** More moving parts and more CPU than dense-only.
-
-- **Cross-encoder reranking** scores each **(query, chunk)** pair more accurately than cosine alone.  
-  **Trade-off:** Slower first query (model load) and more compute per request.
-
-- **Lexical phrase priority** scans the corpus for queries where **tokens appear in order** in a short window (e.g. “track, document”).  
-  **Trade-off:** Extra pass over chunks; tuned rules to avoid junk matches on very short queries.
-
-**Finding:** For a **two-document** corpus, this stack noticeably improved **subsection** and **short-query** behaviour compared to dense-only + large chunks.
-
-### Chunking and PDF quirks
-
-- We use **paragraph-first** splitting, then **sentence** splitting for very long blocks, with **overlap** so facts on chunk edges are not lost.  
-  **Trade-off:** Smaller chunks mean **more** chunks → longer indexing and slightly more retrieval noise if `top_k` is too low.
-
-- The EU Act file is a **summary PDF**, not perfect law text. We added **targeted preprocessing** (heading and bullet splits) so list-style sections do not end up in one giant blob.  
-  **Trade-off:** Rules are **specific to this PDF style**; another document might need different rules.
-
-- **Chunk IDs include the page number** so IDs are unique across the whole book. Earlier, per-page indices collided and broke lookups—this was a real bug, not a cosmetic fix.
-
-### Embeddings and index
-
-- Default model is **MPNet-class** (see `config.py` / `.env.example`), not the smallest MiniLM.  
-  **Trade-off:** Better quality and **768-dimensional** vectors vs faster downloads and smaller models.
-
-- FAISS uses **exact** inner product search (`IndexFlatIP`) on **normalized** vectors (cosine-like ranking).  
-  **Trade-off:** Fine for tens–hundreds of chunks; for **millions** of chunks you would switch to an approximate index (IVF, HNSW, etc.).
-
-### Generation and output
-
-- Answers are supposed to **stick to retrieved context**; the system prompt asks for citations and to refuse when the text is not there.  
-  **Trade-off:** The model can still slip; evaluation uses **lightweight heuristics**, not a human gold standard.
-
-- **API and log output** flattens newlines in answers and previews for readable JSON.  
-  **Trade-off:** The **LLM still sees** original newlines inside chunk text when generating.
-
-### Evaluation
-
-- **`test_queries.json`** checks whether the **right PDF** appears in the top results and whether **hint words** show up—not formal legal correctness.  
-  **Trade-off:** Cheap to run, easy to explain, but **not** a substitute for domain expert review.
-
-### Packaging and tooling
-
-- **`pip install -e .`** (via `requirements.txt`) makes imports reliable in **IDEs, scripts, and pytest**.  
-  **Trade-off:** You must run `pip install -r requirements.txt` from the **project root** so `-e .` resolves correctly.
 
 ---
 
