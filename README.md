@@ -1,6 +1,10 @@
-# RAG_PROJECT — ask questions over your PDFs
+# CiteDesk / RAG_PROJECT — ask questions over your PDFs and Word files
 
-This project is a small **question-and-answer** app that reads two PDFs, splits them into searchable pieces, and answers your questions **using only text it found** in those documents. It is not a general chatbot: if the answer is not in the PDFs, it should say so or find the least relavent one.
+This project is a **question-and-answer** app that reads **PDF and Word (.docx)** files, splits them into searchable pieces, embeds them, and answers using **only text it found**. It is not a general chatbot: if the answer is not in the files, it should say so.
+
+**Live portfolio app (browser, no Python):** [CiteDesk on yashthavkar.page.gd](https://yashthavkar.page.gd/cite-desk.html) — drop a document, store the index on that device, then ask.
+
+**Local Python app:** `python scripts/run_server.py --reload` then open `http://127.0.0.1:8000/` — drop files in the UI (they are saved under `data/raw/` and the FAISS index is rebuilt).
 
 This README explains **what I built**, **why I chose it** (including trade-offs), and **how to run everything** step by step.
 
@@ -17,14 +21,16 @@ This README explains **what I built**, **why I chose it** (including trade-offs)
 
 ## What files the project expects
 
-Put these two PDFs in the folder **`data/raw/`** (create the folders if they are missing):
+Put **PDF** or **Word (.docx)** files in **`data/raw/`**. Indexing uses every supported file in that folder.
+
+Optional sample pair (still useful for the original eval set):
 
 | File name | What it is |
 |-----------|------------|
 | `Attention_is_all_you_need.pdf` | The Transformer paper (example technical doc). |
 | `EU_AI_Act_Doc.pdf` | A **summary** of the EU AI Act (not legal advice). |
 
-If the PDFs live somewhere else on your machine, you can copy them in with the setup script (you can refer to Step 4 below).
+You can also drop files in the web UI (`POST /ingest`) instead of copying them by hand.
 
 ---
 ## Findings and trade-offs (design decisions)
@@ -208,7 +214,8 @@ The terminal will print a URL like **`http://127.0.0.1:8000/`**.
 **Ctrl+click** that line in many terminals, or **copy and paste** it into Chrome or Edge.
 
 - **`--reload`** restarts the server when you edit code (handy for development).
-- API documentation (try requests in the browser) is at **`http://127.0.0.1:8000/docs`**.
+- Drop PDF/Word in the CiteDesk UI, or call **`POST /ingest`**.
+- Ask with **`POST /query`**. OpenAPI docs: **`http://127.0.0.1:8000/docs`**.
 
 ---
 

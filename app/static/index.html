@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CiteDesk — Ask your documents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg0: #0c0e12; --card: #181c26; --border: rgba(255,255,255,.08);
+      --text: #e8eaef; --muted: #8b93a7; --accent: #5eead4; --warn: #fcd34d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: "IBM Plex Sans", system-ui, sans-serif; color: var(--text);
+      background:
+        radial-gradient(ellipse 120% 80% at 50% -20%, rgba(94,234,212,.12), transparent 50%),
+        radial-gradient(ellipse 60% 40% at 100% 50%, rgba(99,102,241,.1), transparent 45%),
+        linear-gradient(180deg, var(--bg0), #12151c);
+    }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 2.2rem 1.2rem 4rem; }
+    header { text-align: center; margin-bottom: 1.8rem; }
+    .badge {
+      display: inline-block; font-size: .72rem; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--accent); background: rgba(94,234,212,.15);
+      border: 1px solid rgba(94,234,212,.25); padding: .35rem .75rem; border-radius: 999px;
+    }
+    h1 {
+      font-family: Fraunces, Georgia, serif; font-size: clamp(1.85rem, 5vw, 2.45rem);
+      margin: .8rem 0 .45rem; background: linear-gradient(135deg, #fff, #a5f3e0);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .sub { color: var(--muted); max-width: 34rem; margin: 0 auto; line-height: 1.5; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+    @media (min-width: 860px) { .grid { grid-template-columns: 280px 1fr; align-items: start; } }
+    .panel {
+      background: linear-gradient(145deg, var(--card), #1e2430); border: 1px solid var(--border);
+      border-radius: 1.2rem; padding: 1.2rem;
+    }
+    .drop {
+      display: grid; gap: .4rem; text-align: center; padding: 1.2rem .8rem; cursor: pointer;
+      border: 1.5px dashed rgba(94,234,212,.35); border-radius: 1rem; background: rgba(0,0,0,.2);
+    }
+    .drop.is-over { border-color: #fb7185; background: rgba(251,113,133,.08); }
+    .drop b { font-size: .95rem; }
+    .drop span { color: var(--muted); font-size: .8rem; line-height: 1.4; }
+    .files { list-style: none; margin: .9rem 0 0; padding: 0; font-size: .85rem; }
+    .files li { padding: .45rem 0; border-bottom: 1px solid var(--border); color: #cdd3e0; }
+    label { display: block; font-weight: 600; font-size: .85rem; color: var(--muted); margin-bottom: .45rem; }
+    textarea, input[type="text"] {
+      width: 100%; min-height: 110px; resize: vertical; padding: .9rem 1rem; font: inherit; color: var(--text);
+      background: rgba(0,0,0,.25); border: 1px solid var(--border); border-radius: .75rem;
+    }
+    textarea:focus { outline: none; border-color: rgba(94,234,212,.4); box-shadow: 0 0 0 3px rgba(94,234,212,.25); }
+    .row { display: flex; gap: .7rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
+    button {
+      font: inherit; font-weight: 700; cursor: pointer; border: 0; border-radius: .65rem;
+      padding: .72rem 1.4rem; color: #042f2e; background: linear-gradient(135deg, #5eead4, #2dd4bf);
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    .hint { font-size: .78rem; color: var(--muted); }
+    .answer, .src {
+      white-space: pre-wrap; line-height: 1.6; padding: 1rem 1.1rem; border-radius: .85rem;
+      background: rgba(0,0,0,.22); border: 1px solid var(--border); margin-bottom: .8rem;
+    }
+    .section-title { font-family: Fraunces, Georgia, serif; color: var(--warn); margin: 1.4rem 0 .7rem; }
+    .src-top { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .4rem; font-size: .9rem; }
+    .pill { margin-left: auto; color: var(--accent); font-size: .72rem; font-weight: 700; }
+    .err { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3); color: #fecaca; padding: 1rem; border-radius: .75rem; }
+    footer { text-align: center; margin-top: 2.4rem; color: #5c6578; font-size: .78rem; }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="badge">Retrieval-augmented Q&amp;A</span>
+      <h1>CiteDesk</h1>
+      <p class="sub">Drop PDF or Word files, rebuild the index, then ask. Answers use only retrieved passages.</p>
+    </header>
+    <div class="grid">
+      <aside class="panel">
+        <label class="drop" id="drop">
+          <input id="file" type="file" accept=".pdf,.docx" multiple hidden />
+          <b>Drop PDF or Word</b>
+          <span>Files land in <code>data/raw/</code>, then the hybrid index is rebuilt.</span>
+        </label>
+        <ul class="files" id="files"></ul>
+      </aside>
+      <section class="panel">
+        <form id="f">
+          <label for="q">Your question</label>
+          <textarea id="q" placeholder="Ask something the documents can prove…" required></textarea>
+          <div class="row">
+            <button type="submit" id="btn">Ask</button>
+            <span class="hint" id="status">API: POST /query · POST /ingest</span>
+          </div>
+        </form>
+        <div id="out"></div>
+      </section>
+    </div>
+    <footer>
+      CiteDesk · hybrid dense + BM25 + RRF ·
+      <a href="/docs">OpenAPI</a>
+    </footer>
+  </div>
+  <script>
+    function esc(s) {
+      const d = document.createElement("div");
+      d.textContent = s == null ? "" : String(s);
+      return d.innerHTML;
+    }
+    async function refreshLibrary() {
+      const r = await fetch("/library");
+      const j = await r.json();
+      const ul = document.getElementById("files");
+      if (!j.files || !j.files.length) {
+        ul.innerHTML = "<li>No files yet. Drop a PDF or .docx.</li>";
+        return;
+      }
+      ul.innerHTML = j.files.map((f) =>
+        "<li>" + esc(f.name) + " · " + esc(String(f.kind).toUpperCase()) + "</li>"
+      ).join("");
+    }
+    const drop = document.getElementById("drop");
+    ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => {
+      e.preventDefault(); drop.classList.add("is-over");
+    }));
+    ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => {
+      e.preventDefault(); drop.classList.remove("is-over");
+    }));
+    async function ingest(fileList) {
+      const files = Array.from(fileList || []);
+      if (!files.length) return;
+      const status = document.getElementById("status");
+      status.textContent = "Indexing… this can take a minute on first run.";
+      const body = new FormData();
+      files.forEach((f) => body.append("files", f));
+      const r = await fetch("/ingest", { method: "POST", body });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.detail || JSON.stringify(j));
+      status.textContent = "Indexed " + (j.num_chunks || 0) + " chunks. Ask a question.";
+      await refreshLibrary();
+    }
+    drop.addEventListener("drop", (e) => {
+      ingest(e.dataTransfer.files).catch((err) => {
+        document.getElementById("out").innerHTML = '<div class="err">' + esc(err.message) + "</div>";
+      });
+    });
+    document.getElementById("file").addEventListener("change", (e) => {
+      ingest(e.target.files).catch((err) => {
+        document.getElementById("out").innerHTML = '<div class="err">' + esc(err.message) + "</div>";
+      });
+      e.target.value = "";
+    });
+    document.getElementById("f").onsubmit = async (e) => {
+      e.preventDefault();
+      const query = document.getElementById("q").value.trim();
+      if (!query) return;
+      const btn = document.getElementById("btn");
+      const out = document.getElementById("out");
+      btn.disabled = true;
+      const prev = btn.textContent;
+      btn.textContent = "Retrieving…";
+      out.innerHTML = "";
+      try {
+        const r = await fetch("/query", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        });
+        const j = await r.json();
+        if (!r.ok) {
+          out.innerHTML = '<div class="err">' + esc(typeof j.detail === "string" ? j.detail : JSON.stringify(j, null, 2)) + "</div>";
+          return;
+        }
+        let html = '<div class="section-title">Answer</div><div class="answer">' + esc(j.answer) + "</div>";
+        html += '<div class="section-title">Evidence</div>';
+        (j.sources || []).forEach((s, i) => {
+          html += '<div class="src"><div class="src-top"><strong>' + esc(s.source_file) + "</strong>" +
+            (s.page_number != null ? "<span>Page " + esc(s.page_number) + "</span>" : "") +
+            '<span class="pill">#' + (i + 1) + " · " + esc(s.score) + "</span></div>" +
+            (s.section_heading ? "<div>" + esc(s.section_heading) + "</div>" : "") +
+            "<div>" + esc(s.preview) + "</div></div>";
+        });
+        out.innerHTML = html;
+      } catch (err) {
+        out.innerHTML = '<div class="err">' + esc(err.message || String(err)) + "</div>";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = prev;
+      }
+    };
+    refreshLibrary().catch(() => {});
+  </script>
+</body>
+</html>

@@ -101,7 +101,10 @@ def load_documents(paths: list[str | Path]) -> list[dict[str, Any]]:
 
 
 def default_raw_paths() -> list[Path]:
-    return [
-        config.DATA_RAW / config.PDF_ATTENTION_NAME,
-        config.DATA_RAW / config.PDF_EU_ACT_NAME,
-    ]
+    """Every PDF and Word file in data/raw/, not only the two sample names."""
+    config.DATA_RAW.mkdir(parents=True, exist_ok=True)
+    return sorted(
+        p
+        for p in config.DATA_RAW.iterdir()
+        if p.is_file() and p.suffix.lower() in {".pdf", ".docx"}
+    )
