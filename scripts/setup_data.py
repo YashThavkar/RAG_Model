@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""Copy the two expected PDFs into data/raw/ from CLI paths or SOURCE_* env vars."""
+"""Copy sample PDFs into data/raw/ from CLI paths or SOURCE_* env vars."""
 
 import argparse
 import os

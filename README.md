@@ -1,8 +1,8 @@
-# Goldvein / RAG_PROJECT — ask questions over your PDFs and Word files
+# RAGBox / RAG_PROJECT — ask questions over many PDFs and Word files
 
-This project is a **question-and-answer** app that reads **PDF and Word (.docx)** files, splits them into searchable pieces, embeds them, and answers using **only text it found**. It is not a general chatbot: if the answer is not in the files, it should say so.
+This project is a **question-and-answer** app that reads **as many PDF and Word (.docx) files as you add**, splits them into searchable pieces, embeds them, and answers using **only text it found**. If the answer is not in the library, it should say so.
 
-**Live portfolio app (browser, no Python):** [Goldvein](https://yashthavkar.page.gd/goldvein.html) — drop a document, watch the extract → retrieve pipeline, then read gold-highlighted spans.
+**Live portfolio app (browser, no Python):** [RAGBox](https://yashthavkar.page.gd/ragbox.html) — drop a library of documents, watch parse → embed → knowledge base, then read highlighted spans.
 
 **Local Python app:** `python scripts/run_server.py --reload` then open `http://127.0.0.1:8000/` — drop files in the UI (they are saved under `data/raw/` and the FAISS index is rebuilt).
 
@@ -52,7 +52,7 @@ You can also drop files in the web UI (`POST /ingest`) instead of copying them b
 - **Lexical phrase priority** scans the corpus for queries where **tokens appear in order** in a short window (e.g. “track, document”).  
   **Trade-off:** Extra pass over chunks; tuned rules to avoid junk matches on very short queries.
 
-**Finding:** For a **two-document** corpus, this stack noticeably improved **subsection** and **short-query** behaviour compared to dense-only + large chunks.
+**Finding:** On mixed multi-document corpora, this stack noticeably improved **subsection** and **short-query** behaviour compared to dense-only + large chunks.
 
 ### Chunking and PDF quirks
 
@@ -135,7 +135,7 @@ The file `requirements.txt` includes **`-e .`**, which installs **this repo** as
 
 ### Step 4 — (Optional) Copy the PDFs into `data/raw/`
 
-If you already placed the two PDFs manually under `data/raw/`, skip this.
+If you already placed PDFs or Word files under `data/raw/`, skip this.
 
 Otherwise, copy from paths you have:
 
@@ -214,7 +214,7 @@ The terminal will print a URL like **`http://127.0.0.1:8000/`**.
 **Ctrl+click** that line in many terminals, or **copy and paste** it into Chrome or Edge.
 
 - **`--reload`** restarts the server when you edit code (handy for development).
-- Drop PDF/Word in the CiteDesk UI, or call **`POST /ingest`**.
+- Drop as many PDF/Word files as you need in the RAGBox UI, or call **`POST /ingest`**.
 - Ask with **`POST /query`**. OpenAPI docs: **`http://127.0.0.1:8000/docs`**.
 
 ---

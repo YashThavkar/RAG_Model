@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 """
-HTTP front door: JSON API for ingest + query, plus the CiteDesk HTML shell.
+HTTP front door: JSON API for ingest + query, plus the RAGBox HTML shell.
 
 Business logic stays in pipeline — this file validates input and serves the UI.
 """
@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from app import config
 from app.pipeline import answer_query, ingest_and_index
 
-app = FastAPI(title="CiteDesk RAG", version="1.1.0")
+app = FastAPI(title="RAGBox", version="1.1.0")
 UI_FILE = Path(__file__).resolve().parent / "static" / "index.html"
 ALLOWED_SUFFIX = {".pdf", ".docx"}
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024

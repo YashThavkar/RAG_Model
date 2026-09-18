@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CiteDesk — Ask your documents</title>
+  <title>RAGBox — Ask your documents</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -77,15 +77,15 @@
   <div class="wrap">
     <header>
       <span class="badge">Retrieval-augmented Q&amp;A</span>
-      <h1>Goldvein</h1>
-      <p class="sub">Drop PDF or Word files, rebuild the index, then ask. Answers use only retrieved passages — highlighted and cited.</p>
+      <h1>RAGBox</h1>
+      <p class="sub">Drop as many PDF or Word files as you need, rebuild the index, then ask. Answers use only retrieved passages — highlighted and cited.</p>
     </header>
     <div class="grid">
       <aside class="panel">
         <label class="drop" id="drop">
           <input id="file" type="file" accept=".pdf,.docx" multiple hidden />
-          <b>Drop PDF or Word</b>
-          <span>Files land in <code>data/raw/</code>, then the hybrid index is rebuilt.</span>
+          <b>Drop many PDF or Word files</b>
+          <span>Files land in <code>data/raw/</code>, then the hybrid index is rebuilt over the whole folder.</span>
         </label>
         <ul class="files" id="files"></ul>
       </aside>
@@ -102,7 +102,7 @@
       </section>
     </div>
     <footer>
-      CiteDesk · hybrid dense + BM25 + RRF ·
+      RAGBox · hybrid dense + BM25 + RRF ·
       <a href="/docs">OpenAPI</a>
     </footer>
   </div>
