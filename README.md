@@ -1,8 +1,8 @@
-# CiteDesk / RAG_PROJECT — ask questions over your PDFs and Word files
+# Goldvein / RAG_PROJECT — ask questions over your PDFs and Word files
 
 This project is a **question-and-answer** app that reads **PDF and Word (.docx)** files, splits them into searchable pieces, embeds them, and answers using **only text it found**. It is not a general chatbot: if the answer is not in the files, it should say so.
 
-**Live portfolio app (browser, no Python):** [CiteDesk on yashthavkar.page.gd](https://yashthavkar.page.gd/cite-desk.html) — drop a document, store the index on that device, then ask.
+**Live portfolio app (browser, no Python):** [Goldvein](https://yashthavkar.page.gd/goldvein.html) — drop a document, watch the extract → retrieve pipeline, then read gold-highlighted spans.
 
 **Local Python app:** `python scripts/run_server.py --reload` then open `http://127.0.0.1:8000/` — drop files in the UI (they are saved under `data/raw/` and the FAISS index is rebuilt).
 
